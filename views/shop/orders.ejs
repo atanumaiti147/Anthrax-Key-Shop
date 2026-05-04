@@ -30,9 +30,13 @@
                             <td class="px-6 py-4"><%= new Date(order.keyDetails.expiryDate).toLocaleDateString() %></td>
                             <td class="px-6 py-4">₹<%= order.amount %></td>
                             <td class="px-6 py-4">
-                                <span class="bg-<%= order.status === 'paid' ? 'emerald' : 'amber' %>-500/10 text-<%= order.status === 'paid' ? 'emerald' : 'amber' %>-500 text-xs font-medium px-2.5 py-1 rounded-full border border-<%= order.status === 'paid' ? 'emerald' : 'amber' %>-500/20">
-                                    <%= order.status %>
-                                </span>
+                                <% if (order.status === 'paid') { %>
+                                    <span class="bg-emerald-500/10 text-emerald-500 text-xs font-medium px-2.5 py-1 rounded-full border border-emerald-500/20">paid</span>
+                                <% } else if (order.status === 'pending') { %>
+                                    <span class="bg-amber-500/10 text-amber-500 text-xs font-medium px-2.5 py-1 rounded-full border border-amber-500/20">pending</span>
+                                <% } else { %>
+                                    <span class="bg-slate-500/10 text-slate-400 text-xs font-medium px-2.5 py-1 rounded-full border border-slate-500/20"><%= order.status %></span>
+                                <% } %>
                             </td>
                             <td class="px-6 py-4 text-emerald-400 font-mono text-xs">
                                 <% if (order.transferred) { %>
