@@ -52,16 +52,17 @@ router.get('/logout', (req, res) => {
   res.redirect('/admin/login');
 });
 
-// ================== DASHBOARD (ENHANCED) ==================
+// ================== DASHBOARD (FIXED AMOUNTS) ==================
 router.get('/dashboard', ensureShopAdmin, async (req, res) => {
   const settings = await ShopSettings.getSettings();
 
   // Total stats
   const totalOrders = await ShopOrder.countDocuments();
-  const totalRevenue = (await ShopOrder.aggregate([
+  const totalAgg = await ShopOrder.aggregate([
     { $match: { status: 'paid' } },
     { $group: { _id: null, total: { $sum: '$amount' } } }
-  ]))[0]?.total || 0;
+  ]);
+  const totalRevenue = Math.round((totalAgg[0]?.total || 0) * 100) / 100;
 
   // Today's stats
   const startOfToday = new Date();
@@ -69,10 +70,11 @@ router.get('/dashboard', ensureShopAdmin, async (req, res) => {
   const endOfToday = new Date();
   endOfToday.setHours(23,59,59,999);
 
-  const todayRevenue = (await ShopOrder.aggregate([
+  const todayAgg = await ShopOrder.aggregate([
     { $match: { status: 'paid', createdAt: { $gte: startOfToday, $lte: endOfToday } } },
     { $group: { _id: null, total: { $sum: '$amount' } } }
-  ]))[0]?.total || 0;
+  ]);
+  const todayRevenue = Math.round((todayAgg[0]?.total || 0) * 100) / 100;
 
   const todayOrders = await ShopOrder.countDocuments({
     createdAt: { $gte: startOfToday, $lte: endOfToday }
@@ -83,10 +85,11 @@ router.get('/dashboard', ensureShopAdmin, async (req, res) => {
   const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23,59,59,999);
 
-  const monthRevenue = (await ShopOrder.aggregate([
+  const monthAgg = await ShopOrder.aggregate([
     { $match: { status: 'paid', createdAt: { $gte: startOfMonth, $lte: endOfMonth } } },
     { $group: { _id: null, total: { $sum: '$amount' } } }
-  ]))[0]?.total || 0;
+  ]);
+  const monthRevenue = Math.round((monthAgg[0]?.total || 0) * 100) / 100;
 
   // New users this month
   const newUsers = await ShopUser.countDocuments({
@@ -360,7 +363,6 @@ router.post('/coupons/create', ensureShopAdmin, async (req, res) => {
   const { code, discountType, discountValue, minOrderAmount, maxUses, startDate, endDate, active,
           minDevices, oncePerUser, allowedEmails } = req.body;
   try {
-    // Parse allowed emails
     const emailList = allowedEmails ? allowedEmails.split(',').map(e => e.trim().toLowerCase()).filter(e => e) : [];
 
     await Coupon.create({
@@ -527,7 +529,7 @@ router.get('/announcements/delete/:id', ensureShopAdmin, async (req, res) => {
   res.redirect('/admin/announcements');
 });
 
-// ================== EXPORT ORDERS CSV ==================
+// ================== EXPORT ORDERS CSV (FIXED AMOUNTS) ==================
 router.get('/export-orders', ensureShopAdmin, async (req, res) => {
   try {
     const orders = await ShopOrder.find()
@@ -540,7 +542,10 @@ router.get('/export-orders', ensureShopAdmin, async (req, res) => {
       const created = new Date(order.createdAt);
       const expiry = new Date(order.keyDetails.expiryDate);
       const days = Math.ceil((expiry - created) / (1000 * 60 * 60 * 24));
-      csv += `${order.razorpayOrderId},${order.userId?.email || 'N/A'},${days},${order.keyDetails.maxDevices},₹${order.amount},${order.status},${order.couponCode || 'None'},₹${order.discountAmount || 0},${order.generatedKey || 'N/A'},${created.toLocaleDateString('en-IN')}\n`;
+      // Use toFixed for clean CSV output
+      const amount = Number(order.amount).toFixed(2);
+      const discount = Number(order.discountAmount || 0).toFixed(2);
+      csv += `${order.razorpayOrderId},${order.userId?.email || 'N/A'},${days},${order.keyDetails.maxDevices},₹${amount},${order.status},${order.couponCode || 'None'},₹${discount},${order.generatedKey || 'N/A'},${created.toLocaleDateString('en-IN')}\n`;
     });
 
     res.setHeader('Content-Type', 'text/csv');
@@ -589,7 +594,6 @@ router.get('/settings/2fa', ensureShopAdmin, async (req, res) => {
     if (admin.twoFactorEnabled) {
       return res.render('admin/2fa-status', { enabled: true, adminRole: req.session.shopAdminRole });
     }
-    // Generate a secret for the admin
     const secret = speakeasy.generateSecret({
       name: `KeyShop (${admin.email})`
     });
@@ -630,7 +634,6 @@ router.post('/settings/2fa/verify', ensureShopAdmin, async (req, res) => {
     });
   }
 
-  // Enable 2FA and save the secret
   await ShopAdmin.findByIdAndUpdate(req.session.shopAdminId, {
     twoFactorEnabled: true,
     twoFactorSecret: secret
@@ -672,7 +675,6 @@ router.post('/verify-2fa', async (req, res) => {
     return res.render('admin/verify-2fa', { error: 'Invalid OTP code' });
   }
 
-  // Complete login
   req.session.shopAdminId = admin._id;
   req.session.shopAdminRole = admin.role;
   delete req.session.tempAdminId;
