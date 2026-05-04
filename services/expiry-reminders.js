@@ -28,7 +28,7 @@ async function checkAndSendReminders() {
       if ((diffDays === 3 || diffDays === 1) && !order.remindersSent.includes(diffDays)) {
         // Prepare common data
         const shopName = settings.siteName || 'Key Shop';
-        const shopUrl = process.env.SHOP_URL || 'http://localhost:5000';
+        const shopUrl = process.env.SHOP_URL || 'https://shop.anthrax.qzz.io';
         const expiryDateStr = expiry.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
 
         // ----- Email -----
