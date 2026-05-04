@@ -34,7 +34,7 @@ router.get('/orders', ensureAuth, async (req, res) => {
   res.render('shop/orders', { user: req.user, orders, settings });
 });
 
-// Coupon validation (advanced rules)
+// Coupon validation (unchanged, skipped for brevity – same as yours)
 router.post('/validate-coupon', ensureAuth, async (req, res) => {
   const { code, subtotal, maxDevices } = req.body;
   try {
@@ -81,7 +81,7 @@ router.post('/validate-coupon', ensureAuth, async (req, res) => {
   }
 });
 
-// Create Razorpay order (now accepts gift fields)
+// Create Razorpay order — FIXED
 router.post('/create-order', ensureAuth, async (req, res) => {
   const { durationDays, maxDevices, note, discordUsername, couponCode,
           isGift, giftEmail, giftDiscordUsername } = req.body;
@@ -128,8 +128,11 @@ router.post('/create-order', ensureAuth, async (req, res) => {
     key_secret: process.env.RAZORPAY_KEY_SECRET
   });
 
+  // ** FIXED: round to integer paise **
+  const amountInPaise = Math.round(amount * 100);
+
   const options = {
-    amount: amount * 100,
+    amount: amountInPaise,   // integer
     currency: 'INR',
     receipt: `receipt_${Date.now()}`,
     payment_capture: 1
@@ -158,7 +161,7 @@ router.post('/create-order', ensureAuth, async (req, res) => {
 
     res.json({
       orderId: order.id,
-      amount: amount * 100,
+      amount: amountInPaise,   // paise bhej rahe hain frontend ko
       key: process.env.RAZORPAY_KEY_ID
     });
   } catch (err) {
@@ -167,7 +170,7 @@ router.post('/create-order', ensureAuth, async (req, res) => {
   }
 });
 
-// Verify payment – now handles gift delivery properly
+// Verify payment – unchanged, only amountInPaise not needed
 router.post('/verify-payment', ensureAuth, async (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
   console.log('📥 Received verification request:', { razorpay_order_id, razorpay_payment_id, razorpay_signature });
@@ -220,7 +223,6 @@ router.post('/verify-payment', ensureAuth, async (req, res) => {
     const buyerName = req.user ? (req.user.username || req.user.email) : 'Someone';
 
     if (order.isGift) {
-      // Send key to recipient email
       if (order.giftRecipientEmail) {
         const giftEmailData = {
           shopName: settings.siteName || 'Key Shop',
@@ -239,12 +241,10 @@ router.post('/verify-payment', ensureAuth, async (req, res) => {
         await sendEmail(order.giftRecipientEmail, '🎁 You received a gift license!', giftEmailData)
           .catch(err => console.error('Gift email failed:', err));
       }
-      // Send gift DM to recipient Discord
       if (order.giftRecipientDiscordUsername) {
         await sendGiftDiscordDM(order.giftRecipientDiscordUsername, key, order.keyDetails.expiryDate, order._id, buyerName)
           .catch(err => console.error('Gift Discord DM failed:', err));
       }
-      // Buyer receipt (without key)
       if (order.email) {
         const buyerEmailData = {
           shopName: settings.siteName || 'Key Shop',
@@ -264,7 +264,6 @@ router.post('/verify-payment', ensureAuth, async (req, res) => {
           .catch(err => console.error('Buyer email failed:', err));
       }
     } else {
-      // Normal delivery to buyer
       if (order.email) {
         const emailData = {
           shopName: settings.siteName || 'Key Shop',
@@ -342,8 +341,11 @@ router.post('/create-renew-order', ensureAuth, async (req, res) => {
     key_secret: process.env.RAZORPAY_KEY_SECRET
   });
 
+  // FIXED: round to integer paise
+  const amountInPaise = Math.round(amount * 100);
+
   const options = {
-    amount: amount * 100,
+    amount: amountInPaise,
     currency: 'INR',
     receipt: `renewal_${Date.now()}`,
     payment_capture: 1
@@ -364,7 +366,7 @@ router.post('/create-renew-order', ensureAuth, async (req, res) => {
 
     res.json({
       orderId: order.id,
-      amount: amount * 100,
+      amount: amountInPaise,
       key: process.env.RAZORPAY_KEY_ID
     });
   } catch (err) {
@@ -487,7 +489,7 @@ router.get('/success/:orderId', ensureAuth, async (req, res) => {
   }
 });
 
-// Invoice download (PDF)
+// Invoice download
 router.get('/invoice/:orderId', ensureAuth, async (req, res) => {
   try {
     const order = await ShopOrder.findById(req.params.orderId).populate('userId');
