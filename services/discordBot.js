@@ -21,7 +21,7 @@ module.exports.sendDiscordDM = async (discordId, key, expiryDate, orderId) => {
     if (!user) return console.error('User not found');
 
     const shopName = process.env.SHOP_NAME || 'Key Shop';
-    const shopUrl = process.env.SHOP_URL || 'http://localhost:5000';
+    const shopUrl = process.env.SHOP_URL || 'https://shop.anthrax.qzz.io';
     const supportServer = process.env.DISCORD_SUPPORT_SERVER || 'https://discord.gg/2fyTyCPZJP';
 
     const embed = new EmbedBuilder()
@@ -76,7 +76,7 @@ module.exports.sendWelcomeDM = async (discordId, username) => {
     if (!user) return console.error('User not found for welcome DM');
 
     const shopName = process.env.SHOP_NAME || 'Key Shop';
-    const shopUrl = process.env.SHOP_URL || 'http://localhost:5000';
+    const shopUrl = process.env.SHOP_URL || 'https://shop.anthrax.qzz.io';
     const supportServer = process.env.DISCORD_SUPPORT_SERVER || 'https://discord.gg/2fyTyCPZJP';
 
     const embed = new EmbedBuilder()
@@ -185,7 +185,7 @@ module.exports.sendGiftDiscordDM = async (username, key, expiryDate, orderId, fr
     }
 
     const shopName = process.env.SHOP_NAME || 'Key Shop';
-    const shopUrl = process.env.SHOP_URL || 'http://localhost:5000';
+    const shopUrl = process.env.SHOP_URL || 'https://shop.anthrax.qzz.io';
     const supportServer = process.env.DISCORD_SUPPORT_SERVER || 'https://discord.gg/2fyTyCPZJP';
 
     const embed = new EmbedBuilder()
