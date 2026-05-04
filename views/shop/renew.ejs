@@ -1,0 +1,83 @@
+<%- include('../partials/header') %>
+<div class="min-h-screen flex items-center justify-center bg-darkbase p-4">
+  <div class="glass-card w-full max-w-lg p-8">
+    <h2 class="text-2xl font-bold text-white mb-2"><i class="fa-solid fa-arrows-rotate text-primary mr-2"></i> Renew Key</h2>
+    <p class="text-slate-400 text-sm mb-6">Extend the validity of your existing key</p>
+
+    <div class="bg-slate-900/60 rounded-xl p-4 mb-6">
+      <p class="text-white font-mono text-xs break-all"><%= key %></p>
+      <p class="text-slate-400 text-xs mt-2">Expires: <span class="text-slate-300"><%= new Date(currentExpiry).toLocaleDateString() %></span></p>
+    </div>
+
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm text-slate-300 mb-1">New Expiry Date</label>
+        <input type="date" id="newExpiryDate" class="input-field" min="<%= new Date().toISOString().split('T')[0] %>" required>
+      </div>
+
+      <div class="bg-slate-900/60 rounded-xl p-4 border border-primary/20 flex justify-between items-center">
+        <div>
+          <p class="text-slate-400 text-sm">Extension Cost</p>
+          <p class="text-2xl font-bold text-white" id="renewPrice">₹0</p>
+        </div>
+        <button onclick="initiateRenewPayment()" class="btn-primary px-6 py-2">Pay & Extend</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const key = "<%= key %>";
+  const perDayPrice = <%= perDayPrice %>;
+  const dateInput = document.getElementById('newExpiryDate');
+  const priceDisplay = document.getElementById('renewPrice');
+
+  dateInput.addEventListener('change', () => {
+    const selected = new Date(dateInput.value);
+    const today = new Date(); today.setHours(0,0,0,0);
+    const diffDays = Math.ceil((selected - today) / (1000 * 60 * 60 * 24));
+    if (diffDays > 0) priceDisplay.innerText = `₹${diffDays * perDayPrice}`;
+    else priceDisplay.innerText = `₹0`;
+  });
+</script>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<script>
+  async function initiateRenewPayment() {
+    const newExpiryDate = document.getElementById('newExpiryDate').value;
+    if (!newExpiryDate) return alert('Select a date');
+
+    const res = await fetch('/shop/create-renew-order', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, newExpiryDate })
+    });
+    const data = await res.json();
+    if (data.error) return alert(data.error);
+
+    const options = {
+      key: data.key,
+      amount: data.amount,
+      currency: 'INR',
+      name: 'Key Shop Renewal',
+      order_id: data.orderId,
+      handler: async function (response) {
+        const verifyRes = await fetch('/shop/verify-renew-payment', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(response)
+        });
+        const verifyData = await verifyRes.json();
+        if (verifyData.success) {
+          alert('✅ Key renewed successfully!');
+          window.location.href = '/shop/orders';
+        } else {
+          alert('❌ Renewal failed');
+        }
+      }
+    };
+    const rzp = new Razorpay(options);
+    rzp.open();
+  }
+</script>
+<%- include('../partials/footer') %>

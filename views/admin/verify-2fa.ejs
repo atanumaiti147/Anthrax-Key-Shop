@@ -1,0 +1,24 @@
+<%- include('../partials/header') %>
+
+<div class="min-h-screen flex items-center justify-center bg-darkbase p-4">
+    <div class="glass-card w-full max-w-md p-8 text-center">
+        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-slate-900 shadow-[0_0_30px_rgba(239,31,31,0.2)] border border-slate-800 mb-6">
+            <i class="fa-solid fa-key text-2xl text-primary"></i>
+        </div>
+        <h2 class="text-2xl font-bold text-white mb-2">Two-Factor Authentication</h2>
+        <p class="text-slate-400 text-sm mb-6">Enter the 6-digit code from your authenticator app.</p>
+
+        <% if (typeof error !== 'undefined' && error) { %>
+            <div class="bg-red-500/10 border border-red-500/30 text-red-300 p-3 rounded-xl mb-4"><%= error %></div>
+        <% } %>
+
+        <form action="/admin/verify-2fa" method="POST" class="space-y-4">
+            <div>
+                <input type="text" name="token" placeholder="123456" required class="input-field text-center text-2xl tracking-widest" maxlength="6">
+            </div>
+            <button type="submit" class="btn-primary w-full py-3">Verify</button>
+        </form>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

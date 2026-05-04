@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            background-color: #0f172a;
+            color: #e2e8f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 520px;
+            margin: auto;
+            background: rgba(30,41,59,0.8);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 0 0 30px 0;
+            border: 1px solid #334155;
+            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        .banner {
+            background: linear-gradient(135deg, #ef1f1f, #b91c1c);
+            padding: 30px 20px;
+            text-align: center;
+        }
+        .banner h1 {
+            margin: 0;
+            color: white;
+            font-size: 26px;
+            font-weight: 700;
+        }
+        .banner p {
+            margin: 8px 0 0;
+            color: rgba(255,255,255,0.85);
+            font-size: 14px;
+        }
+        .content {
+            padding: 24px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        td {
+            padding: 12px 6px;
+            border-bottom: 1px solid #1e293b;
+            vertical-align: top;
+        }
+        .key-cell {
+            background: #1e293b;
+            color: #10b981;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            word-break: break-all;
+            letter-spacing: 1px;
+            line-height: 1.4;
+        }
+        .footer {
+            margin-top: 24px;
+            font-size: 12px;
+            color: #64748b;
+            text-align: center;
+        }
+        a {
+            color: #ef1f1f;
+            text-decoration: none;
+        }
+        .btn {
+            display: inline-block;
+            background: #ef1f1f;
+            color: white !important;
+            padding: 10px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            text-decoration: none;
+            margin: 4px;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #ef1f1f;
+            color: #ef1f1f !important;
+        }
+        @media (max-width: 480px) {
+            .key-cell {
+                font-size: 13px;
+                padding: 6px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Banner -->
+        <div class="banner">
+            <% if (typeof isGift !== 'undefined' && isGift) { %>
+                <% if (typeof buyerReceipt !== 'undefined' && buyerReceipt) { %>
+                    <h1>🎁 Gift Sent!</h1>
+                    <p>Your gift has been delivered.</p>
+                <% } else { %>
+                    <h1>🎁 You've received a gift!</h1>
+                    <p><%= typeof from !== 'undefined' ? from : 'Someone' %> sent you a license key</p>
+                <% } %>
+            <% } else { %>
+                <h1>🎉 Thank You!</h1>
+                <p>Your license key is ready</p>
+            <% } %>
+        </div>
+
+        <!-- Content -->
+        <div class="content">
+            <% if (typeof buyerReceipt !== 'undefined' && buyerReceipt) { %>
+                <p>Your gift was sent successfully! The recipient will receive their key shortly.</p>
+                <p><strong>Order Details:</strong></p>
+            <% } else { %>
+                <p>
+                    <% if (typeof isGift !== 'undefined' && isGift) { %>
+                        <strong><%= typeof from !== 'undefined' ? from : 'Someone' %></strong> has gifted you a license key!
+                    <% } else { %>
+                        Thank you for purchasing from <strong><%= shopName %></strong>.
+                    <% } %>
+                </p>
+            <% } %>
+
+            <table>
+                <% if (!(typeof buyerReceipt !== 'undefined' && buyerReceipt) && (typeof key !== 'undefined' && key !== null)) { %>
+                <tr>
+                    <td style="width: 100px; font-weight: bold;">🔑 License Key</td>
+                    <td><span class="key-cell"><%= key %></span></td>
+                </tr>
+                <% } %>
+                <tr>
+                    <td style="font-weight: bold;">📅 Expires On</td>
+                    <td><%= expiryDate %></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;">💻 Max Devices</td>
+                    <td><%= maxDevices %></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;">📝 Note</td>
+                    <td><%= note || '—' %></td>
+                </tr>
+                <tr>
+                    <td style="font-weight: bold;">💰 Amount Paid</td>
+                    <td>₹<%= amount %></td>
+                </tr>
+                <% if (couponCode) { %>
+                <tr>
+                    <td style="font-weight: bold;">🎟️ Coupon</td>
+                    <td><%= couponCode %> (-₹<%= discountAmount %>)</td>
+                </tr>
+                <% } %>
+            </table>
+
+            <div style="text-align: center; margin-top: 24px;">
+                <% if (!(typeof buyerReceipt !== 'undefined' && buyerReceipt)) { %>
+                    <a href="<%= shopUrl %>/shop/orders" class="btn">View Orders</a>
+                    <a href="<%= shopUrl %>/shop/renew/<%= orderId %>" class="btn btn-outline">Renew Key</a>
+                    <br>
+                    <a href="<%= shopUrl %>/shop/invoice/<%= orderId %>" class="btn btn-outline" style="margin-top: 8px;">
+                        🧾 Download Invoice
+                    </a>
+                <% } else { %>
+                    <a href="<%= shopUrl %>/shop/orders" class="btn">View Orders</a>
+                <% } %>
+            </div>
+
+            <div class="footer">
+                &copy; <%= new Date().getFullYear() %> <%= shopName %>. All rights reserved.
+            </div>
+        </div>
+    </div>
+</body>
+</html>

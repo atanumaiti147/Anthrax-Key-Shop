@@ -1,0 +1,56 @@
+<%- include('../partials/header') %>
+
+<div class="w-full max-w-md mx-auto mt-6 px-4">
+    <a href="/" class="inline-flex items-center text-slate-400 hover:text-white text-sm transition-colors">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Back to Home
+    </a>
+</div>
+
+<div class="w-full max-w-md mx-auto mt-4 px-4">
+    <div class="glass-card p-8 md:p-10 text-center">
+        <!-- Logo Circle: Directly from settings -->
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full bg-slate-900 shadow-[0_0_30px_rgba(239,31,31,0.2)] border border-slate-800 mb-6 overflow-hidden">
+            <% if (typeof settings !== 'undefined' && settings && settings.logoUrl && settings.logoUrl.length > 5) { %>
+                <img src="<%= settings.logoUrl %>" alt="Logo" class="w-full h-full object-contain p-2" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';">
+                <i class="fa-solid fa-lock-keyhole text-3xl text-white" style="display:none;"></i>
+            <% } else { %>
+                <i class="fa-solid fa-lock-keyhole text-3xl text-white"></i>
+            <% } %>
+        </div>
+
+        <h1 class="text-3xl md:text-4xl font-bold text-white mb-2">Welcome Back</h1>
+        <p class="text-slate-400 text-sm md:text-base mb-8">Choose a method to continue</p>
+
+        <div class="space-y-4">
+            <% if (typeof local_settings !== 'undefined' && local_settings && local_settings.enableDiscordLogin) { %>
+                <a href="/auth/discord" class="group relative w-full flex items-center justify-center gap-3 bg-[#5865F2] hover:bg-[#4752C4] text-white font-medium py-3.5 px-4 rounded-xl transition-all duration-300 shadow-lg shadow-[#5865F2]/20 hover:shadow-[#5865F2]/30 transform hover:-translate-y-0.5">
+                    <i class="fa-brands fa-discord text-xl"></i>
+                    <span>Continue with Discord</span>
+                </a>
+            <% } %>
+
+            <% if (typeof local_settings !== 'undefined' && local_settings && local_settings.enableGoogleLogin) { %>
+                <a href="/auth/google" class="group relative w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-900 font-medium py-3.5 px-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                    <i class="fa-brands fa-google text-xl text-red-500"></i>
+                    <span>Continue with Google</span>
+                </a>
+            <% } %>
+
+            <% if (!local_settings || (!local_settings.enableDiscordLogin && !local_settings.enableGoogleLogin)) { %>
+                <div class="bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 text-amber-300 text-sm">
+                    <i class="fa-solid fa-triangle-exclamation mr-2"></i> Login methods are currently disabled. Please contact the administrator.
+                </div>
+            <% } %>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-slate-800/70">
+            <p class="text-xs text-slate-500 flex items-center justify-center gap-2">
+                <i class="fa-solid fa-shield-halved text-primary"></i> Secured by <%= (typeof settings !== 'undefined' && settings && settings.siteName) ? settings.siteName : 'Key Shop' %>
+            </p>
+        </div>
+    </div>
+</div>
+
+<div class="h-8"></div>
+
+<%- include('../partials/footer') %>

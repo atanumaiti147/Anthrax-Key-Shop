@@ -1,0 +1,138 @@
+<%- include('../partials/header') %>
+
+<!-- Favicon safety -->
+<% if (typeof settings !== 'undefined' && settings.faviconUrl) { %>
+    <link rel="icon" href="<%= settings.faviconUrl %>" type="image/x-icon">
+<% } %>
+
+<%- include('../partials/admin-nav') %>
+
+<div class="w-full max-w-6xl mx-auto space-y-6">
+    <!-- Stats Cards (First row: 4 cards) -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="glass-card p-6 flex items-center justify-between group hover:border-primary/50 transition">
+            <div>
+                <p class="text-slate-400 text-sm font-medium mb-1">Today's Revenue</p>
+                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition">₹<%= todayRevenue %></h3>
+                <p class="text-xs text-slate-500 mt-1"><%= todayOrders %> order(s)</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-emerald-500">
+                <i class="fa-solid fa-calendar-day text-xl"></i>
+            </div>
+        </div>
+        <div class="glass-card p-6 flex items-center justify-between group hover:border-primary/50 transition">
+            <div>
+                <p class="text-slate-400 text-sm font-medium mb-1">This Month</p>
+                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition">₹<%= monthRevenue %></h3>
+                <p class="text-xs text-slate-500 mt-1">Revenue</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-blue-500">
+                <i class="fa-solid fa-chart-line text-xl"></i>
+            </div>
+        </div>
+        <div class="glass-card p-6 flex items-center justify-between group hover:border-primary/50 transition">
+            <div>
+                <p class="text-slate-400 text-sm font-medium mb-1">New Users</p>
+                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition"><%= newUsers %></h3>
+                <p class="text-xs text-slate-500 mt-1">This month</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-purple-500">
+                <i class="fa-solid fa-user-plus text-xl"></i>
+            </div>
+        </div>
+        <div class="glass-card p-6 flex items-center justify-between group hover:border-primary/50 transition">
+            <div>
+                <p class="text-slate-400 text-sm font-medium mb-1">Total Revenue</p>
+                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition">₹<%= totalRevenue %></h3>
+                <p class="text-xs text-slate-500 mt-1"><%= totalOrders %> orders</p>
+            </div>
+            <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-amber-500">
+                <i class="fa-solid fa-coins text-xl"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart + Recent Orders -->
+    <div class="flex flex-col lg:flex-row gap-6">
+        <!-- Revenue Chart -->
+        <div class="flex-1 glass-card p-6">
+            <h3 class="text-lg font-bold text-white mb-4">Revenue (Last 30 Days)</h3>
+            <div class="relative w-full h-64 md:h-80">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+        <!-- Recent Orders + Export -->
+        <div class="w-full lg:w-64 glass-card p-6 space-y-4">
+            <h3 class="text-lg font-bold text-white">Recent Orders</h3>
+            <% if (typeof recentOrders !== 'undefined' && recentOrders.length > 0) { %>
+                <ul class="space-y-2 text-sm text-slate-400">
+                    <% recentOrders.forEach(o => { %>
+                        <li class="flex justify-between border-b border-slate-800 pb-1">
+                            <span class="truncate mr-2"><%= o.userId?.email || 'N/A' %></span>
+                            <span class="text-emerald-400">₹<%= o.amount %></span>
+                        </li>
+                    <% }) %>
+                </ul>
+            <% } else { %>
+                <p class="text-slate-500 text-sm">No recent orders yet.</p>
+            <% } %>
+            <a href="/admin/orders" class="btn-primary text-sm w-full justify-center py-2 mt-2">View All Orders</a>
+            <a href="/admin/export-orders" class="btn-primary !bg-slate-700 hover:!bg-slate-600 text-sm w-full justify-center py-2">
+                <i class="fa-solid fa-file-csv mr-1"></i> Export CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Chart.js CDN -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+    // Dummy data – replace with real data from server if available
+    const labels = [];
+    const revenueData = [];
+    for (let i = 29; i >= 0; i--) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        labels.push(date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }));
+        revenueData.push(Math.floor(Math.random() * 2000 + 500));
+    }
+
+    const ctx = document.getElementById('revenueChart').getContext('2d');
+    new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Revenue (₹)',
+                data: revenueData,
+                borderColor: '#10b981',
+                backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                tension: 0.3,
+                fill: true,
+                pointRadius: 2,
+                pointHoverRadius: 4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: '₹', color: '#94a3b8' },
+                    ticks: { color: '#94a3b8', callback: (val) => '₹' + val },
+                    grid: { color: 'rgba(148,163,184,0.1)' }
+                },
+                x: {
+                    ticks: { color: '#94a3b8', maxTicksLimit: 8, maxRotation: 0 },
+                    grid: { display: false }
+                }
+            },
+            plugins: {
+                legend: { labels: { color: '#94a3b8', boxWidth: 12 } }
+            }
+        }
+    });
+</script>
+
+<%- include('../partials/footer') %>

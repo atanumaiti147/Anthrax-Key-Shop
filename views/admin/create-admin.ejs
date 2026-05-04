@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+
+<div class="w-full max-w-md mx-auto glass-card p-8">
+    <h2 class="text-2xl font-bold text-white mb-6">Create Admin</h2>
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="bg-red-500/10 border border-red-500/30 text-red-300 p-4 rounded-xl mb-4"><%= error %></div>
+    <% } %>
+    <form action="/admin/create-admin" method="POST" class="space-y-5">
+        <div>
+            <label class="text-sm text-slate-300">Email</label>
+            <input type="email" name="email" required class="input-field mt-1">
+        </div>
+        <div>
+            <label class="text-sm text-slate-300">Password</label>
+            <input type="password" name="password" required class="input-field mt-1">
+        </div>
+        <div>
+            <label class="text-sm text-slate-300">Role</label>
+            <select name="role" class="input-field mt-1">
+                <option value="admin">Admin</option>
+                <option value="super_admin">Super Admin</option>
+            </select>
+            <p class="text-xs text-slate-500 mt-1">Super Admin can manage other admins.</p>
+        </div>
+        <button type="submit" class="btn-primary w-full py-2.5">Create Admin</button>
+    </form>
+</div>
+
+<%- include('../partials/footer') %>

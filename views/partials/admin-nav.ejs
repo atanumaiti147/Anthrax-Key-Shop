@@ -1,0 +1,121 @@
+<nav class="w-full max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center py-4 px-6 mb-8 glass-card gap-4 relative">
+    <!-- Logo / Title Area -->
+    <div class="flex w-full md:w-auto justify-between items-center">
+        <div class="text-xl font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-primary"></i> Admin Panel
+        </div>
+        <!-- Hamburger button only (mobile) -->
+        <button id="hamburgerBtn" class="md:hidden text-slate-300 hover:text-white focus:outline-none" onclick="toggleMobileMenu()">
+            <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+    </div>
+
+    <!-- Desktop Navigation (visible on md and up) -->
+    <div class="hidden md:flex items-center gap-2 md:gap-4 flex-wrap">
+        <a href="/admin/dashboard" class="text-sm text-slate-300 hover:text-white transition"><i class="fa-solid fa-chart-pie mr-1"></i> Dashboard</a>
+        <a href="/admin/orders" class="text-sm text-slate-300 hover:text-white transition"><i class="fa-solid fa-list mr-1"></i> Orders</a>
+        <a href="/admin/users" class="text-sm text-slate-300 hover:text-white transition"><i class="fa-solid fa-users mr-1"></i> Users</a>
+        <a href="/admin/settings" class="text-sm text-slate-300 hover:text-white transition"><i class="fa-solid fa-gear mr-1"></i> Settings</a>
+
+        <!-- "More" button -->
+        <button id="moreBtn" onclick="toggleMoreMenu()" class="text-sm text-slate-300 hover:text-white transition flex items-center gap-1 focus:outline-none">
+            More <i class="fa-solid fa-chevron-down text-xs"></i>
+        </button>
+    </div>
+
+    <!-- Mobile Navigation Links (unchanged) -->
+    <div id="navLinks" class="hidden md:hidden flex-col w-full gap-2 mt-4">
+        <a href="/admin/dashboard" class="text-sm text-slate-300 hover:text-white transition"><i class="fa-solid fa-chart-pie mr-1"></i> Dashboard</a>
+        <a href="/admin/orders" class="text-sm text-slate-300 hover:text-white transition"><i class="fa-solid fa-list mr-1"></i> Orders</a>
+        <a href="/admin/users" class="text-sm text-slate-300 hover:text-white transition"><i class="fa-solid fa-users mr-1"></i> Users</a>
+        <a href="/admin/settings" class="text-sm text-slate-300 hover:text-white transition"><i class="fa-solid fa-gear mr-1"></i> Settings</a>
+        <a href="/admin/settings/2fa" class="text-sm text-slate-300 hover:text-white transition">2FA Settings</a>
+        <a href="/admin/coupons" class="text-sm text-slate-300 hover:text-white transition">Coupons</a>
+        <a href="/admin/announcements" class="text-sm text-slate-300 hover:text-white transition">Announcements</a>
+        <a href="/admin/policies" class="text-sm text-slate-300 hover:text-white transition">Policies</a>
+        <% if (typeof adminRole !== 'undefined' && adminRole === 'super_admin') { %>
+            <a href="/admin/manage-admins" class="text-sm text-slate-300 hover:text-white transition">Manage Admins</a>
+        <% } %>
+        <a href="/admin/logout" class="text-sm text-red-400 hover:text-red-300 transition">Logout</a>
+    </div>
+</nav>
+
+<!-- Hidden dropdown template – will be cloned into body -->
+<div id="moreMenuTemplate" style="display:none;">
+    <div class="bg-slate-800 rounded-xl shadow-2xl border border-slate-700 py-2 w-48">
+        <a href="/admin/settings/2fa" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition">2FA Settings</a>
+        <a href="/admin/coupons" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition">Coupons</a>
+        <a href="/admin/announcements" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition">Announcements</a>
+        <a href="/admin/policies" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition">Policies</a>
+        <% if (typeof adminRole !== 'undefined' && adminRole === 'super_admin') { %>
+            <a href="/admin/manage-admins" class="block px-4 py-2 text-sm text-slate-300 hover:bg-slate-700 hover:text-white transition">Manage Admins</a>
+        <% } %>
+        <hr class="border-slate-700 my-1">
+        <a href="/admin/logout" class="block px-4 py-2 text-sm text-red-400 hover:bg-slate-700 hover:text-red-300 transition">Logout</a>
+    </div>
+</div>
+
+<script>
+    // Mobile menu toggle
+    function toggleMobileMenu() {
+        const menu = document.getElementById('navLinks');
+        menu.classList.toggle('hidden');
+        menu.classList.toggle('flex');
+    }
+
+    // More dropdown – live instance
+    let liveMenu = null;
+
+    function createLiveMenu() {
+        if (liveMenu) return liveMenu;
+        const template = document.getElementById('moreMenuTemplate').firstElementChild.cloneNode(true);
+        const wrapper = document.createElement('div');
+        wrapper.id = 'moreMenuLive';
+        wrapper.style.position = 'fixed';
+        wrapper.style.zIndex = '99999';
+        wrapper.style.display = 'none';
+        wrapper.appendChild(template);
+        document.body.appendChild(wrapper);
+        liveMenu = wrapper;
+        return wrapper;
+    }
+
+    function toggleMoreMenu() {
+        const menu = createLiveMenu();
+        const btn = document.getElementById('moreBtn');
+        if (!btn) return;
+
+        const rect = btn.getBoundingClientRect();
+        menu.style.top = (rect.bottom + 4) + 'px';
+        menu.style.left = (rect.right - 192) + 'px'; // 192 = w-48 width
+
+        if (menu.style.display === 'none' || menu.style.display === '') {
+            menu.style.display = 'block';
+        } else {
+            menu.style.display = 'none';
+        }
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        // Close mobile menu
+        const mobileMenu = document.getElementById('navLinks');
+        const hamburger = document.getElementById('hamburgerBtn');
+        if (mobileMenu && hamburger && !mobileMenu.contains(event.target) && !hamburger.contains(event.target)) {
+            mobileMenu.classList.add('hidden');
+            mobileMenu.classList.remove('flex');
+        }
+
+        // Close more dropdown
+        const btn = document.getElementById('moreBtn');
+        const menu = document.getElementById('moreMenuLive');
+        if (menu && btn && !menu.contains(event.target) && !btn.contains(event.target)) {
+            menu.style.display = 'none';
+        }
+    });
+
+    // Cleanup on page unload
+    window.addEventListener('beforeunload', () => {
+        if (liveMenu) liveMenu.remove();
+    });
+</script>

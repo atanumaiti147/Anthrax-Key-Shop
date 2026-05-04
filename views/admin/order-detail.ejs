@@ -1,0 +1,173 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+
+<div class="w-full max-w-5xl mx-auto glass-card p-8 space-y-8">
+    <a href="/admin/orders" class="inline-flex items-center text-slate-400 hover:text-white text-sm mb-4">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Back to Orders
+    </a>
+
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+            <h2 class="text-3xl font-bold text-white">Order Details</h2>
+            <p class="text-slate-400 text-sm">Order ID: <span class="text-primary font-mono"><%= order.razorpayOrderId %></span></p>
+        </div>
+        <div class="flex gap-2">
+            <% if (order.status === 'paid' && order.generatedKey) { %>
+                <a href="/admin/invoice/<%= order._id %>" class="btn-primary text-sm px-5 py-2.5">
+                    <i class="fa-solid fa-file-pdf mr-1"></i> Invoice
+                </a>
+                <a href="/admin/revoke-key/<%= order._id %>" onclick="return confirm('Revoke this key permanently?')" class="btn-primary !bg-red-600 hover:!bg-red-700 text-sm px-5 py-2.5">
+                    <i class="fa-solid fa-ban mr-1"></i> Revoke Key
+                </a>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- Status & Amount Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-slate-900/40 rounded-2xl p-5 border border-slate-700/50">
+            <p class="text-xs text-slate-400 uppercase tracking-wider">Status</p>
+            <div class="mt-1">
+                <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium 
+                    <%= order.status === 'paid' ? 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/20' : 'bg-amber-500/10 text-amber-300 border border-amber-500/20' %>">
+                    <span class="w-1.5 h-1.5 rounded-full mr-1.5 <%= order.status === 'paid' ? 'bg-emerald-400' : 'bg-amber-400' %>"></span>
+                    <%= order.status.charAt(0).toUpperCase() + order.status.slice(1) %>
+                </span>
+            </div>
+        </div>
+        <div class="bg-slate-900/40 rounded-2xl p-5 border border-slate-700/50">
+            <p class="text-xs text-slate-400 uppercase tracking-wider">Amount Paid</p>
+            <p class="text-2xl font-bold text-white mt-1">₹<%= order.amount %></p>
+            <% if (order.discountAmount > 0) { %>
+                <p class="text-xs text-slate-500">Discount: ₹<%= order.discountAmount %> (<%= order.couponCode %>)</p>
+            <% } %>
+        </div>
+        <div class="bg-slate-900/40 rounded-2xl p-5 border border-slate-700/50">
+            <p class="text-xs text-slate-400 uppercase tracking-wider">Created</p>
+            <p class="text-lg text-white mt-1"><%= new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' }) %></p>
+        </div>
+        <div class="bg-slate-900/40 rounded-2xl p-5 border border-slate-700/50">
+            <p class="text-xs text-slate-400 uppercase tracking-wider">Payment ID</p>
+            <p class="text-sm text-white mt-1 font-mono break-all"><%= order.razorpayPaymentId || 'N/A' %></p>
+        </div>
+    </div>
+
+    <!-- Customer Information -->
+    <div class="bg-slate-900/40 rounded-2xl p-6 border border-slate-700/50">
+        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-user text-primary"></i> Customer
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300">
+            <div>
+                <span class="text-slate-500">Email:</span> <%= order.email || 'N/A' %>
+            </div>
+            <div>
+                <span class="text-slate-500">Discord Username:</span> <%= order.discordUsername || 'N/A' %>
+            </div>
+            <div>
+                <span class="text-slate-500">Discord ID:</span> <%= order.discordId || 'N/A' %>
+            </div>
+            <div>
+                <span class="text-slate-500">User ID:</span> <%= order.userId?._id || order.userId || 'N/A' %>
+            </div>
+            <% if (order.userId?.provider) { %>
+            <div>
+                <span class="text-slate-500">Login Provider:</span> <%= order.userId.provider %>
+            </div>
+            <% } %>
+        </div>
+    </div>
+
+    <!-- License Key Details -->
+    <div class="bg-slate-900/40 rounded-2xl p-6 border border-slate-700/50">
+        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-key text-primary"></i> License Key
+        </h3>
+        <% if (order.generatedKey) { %>
+            <div class="flex flex-col md:flex-row gap-6">
+                <div class="flex-1">
+                    <p class="text-xs text-slate-400 mb-1">Key</p>
+                    <code class="bg-slate-800 px-3 py-2 rounded-lg text-green-300 font-mono text-sm break-all"><%= order.generatedKey %></code>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400 mb-1">Expires On</p>
+                    <p class="text-white font-bold"><%= new Date(order.keyDetails.expiryDate).toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400 mb-1">Max Devices</p>
+                    <p class="text-white font-bold"><%= order.keyDetails.maxDevices %></p>
+                </div>
+                <div>
+                    <p class="text-xs text-slate-400 mb-1">Duration</p>
+                    <p class="text-white font-bold">
+                        <% const dur = Math.ceil((new Date(order.keyDetails.expiryDate) - new Date(order.createdAt)) / (1000 * 60 * 60 * 24)); %>
+                        <%= dur %> day(s)
+                    </p>
+                </div>
+            </div>
+        <% } else { %>
+            <p class="text-slate-500 italic">No key generated yet.</p>
+        <% } %>
+    </div>
+
+    <!-- Additional Info & Timeline -->
+    <div class="bg-slate-900/40 rounded-2xl p-6 border border-slate-700/50">
+        <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-note-sticky text-primary"></i> Additional Information
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-300">
+            <div>
+                <span class="text-slate-500">Note:</span> <%= order.keyDetails.note || '—' %>
+            </div>
+            <div>
+                <span class="text-slate-500">Coupon Used:</span> <%= order.couponCode ? `${order.couponCode} (-₹${order.discountAmount})` : 'None' %>
+            </div>
+            <div>
+                <span class="text-slate-500">Discount Amount:</span> ₹<%= order.discountAmount || 0 %>
+            </div>
+            <div>
+                <span class="text-slate-500">Razorpay Order ID:</span> <%= order.razorpayOrderId %>
+            </div>
+            <div>
+                <span class="text-slate-500">Razorpay Payment ID:</span> <%= order.razorpayPaymentId || 'N/A' %>
+            </div>
+            <div>
+                <span class="text-slate-500">Created At:</span> <%= new Date(order.createdAt).toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' }) %>
+            </div>
+        </div>
+
+        <!-- Timeline / Activity (if you want to show events like generated, revoked, etc. you could add a small log, but for now just status) -->
+        <div class="mt-6 pt-6 border-t border-slate-700/50">
+            <h4 class="text-sm font-semibold text-white mb-3 flex items-center gap-2">
+                <i class="fa-solid fa-timeline text-primary"></i> Activity
+            </h4>
+            <ul class="space-y-2 text-sm text-slate-400">
+                <li class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                    Order Placed – <%= new Date(order.createdAt).toLocaleString() %>
+                </li>
+                <% if (order.razorpayPaymentId) { %>
+                <li class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-400"></span>
+                    Payment Received – <%= order.razorpayPaymentId %>
+                </li>
+                <% } %>
+                <% if (order.generatedKey) { %>
+                <li class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-purple-400"></span>
+                    Key Generated – <%= new Date(order.createdAt).toLocaleString() %> (approx)
+                </li>
+                <% } %>
+                <% if (order.couponCode) { %>
+                <li class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-yellow-400"></span>
+                    Coupon Applied – <%= order.couponCode %> (-₹<%= order.discountAmount %>)
+                </li>
+                <% } %>
+                <!-- You could later store revocation events -->
+            </ul>
+        </div>
+    </div>
+</div>
+
+<%- include('../partials/footer') %>

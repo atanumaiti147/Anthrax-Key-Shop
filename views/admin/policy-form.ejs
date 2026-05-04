@@ -1,0 +1,99 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+
+<div class="w-full max-w-2xl mx-auto glass-card p-8">
+    <h2 class="text-xl font-bold text-white mb-4"><%= policy ? 'Edit' : 'New' %> Policy</h2>
+
+    <% if (!policy) { %>
+    <!-- Template Selector (only when creating new) -->
+    <div class="mb-6">
+        <label class="text-sm text-slate-300 block mb-2">Load Template (Optional)</label>
+        <select id="templateSelect" class="input-field" onchange="applyTemplate(this.value)">
+            <option value="">-- Choose a template --</option>
+            <option value="privacy">Privacy Policy</option>
+            <option value="terms">Terms of Service</option>
+            <option value="refund">Refund Policy</option>
+        </select>
+    </div>
+    <% } %>
+
+    <form action="/admin/policies/<%= policy ? 'update/' + policy._id : 'save' %>" method="POST" class="space-y-6">
+        <div>
+            <label class="text-sm text-slate-300">Title</label>
+            <input type="text" name="title" id="title" value="<%= policy ? policy.title : '' %>" class="input-field mt-1" required>
+        </div>
+        <div>
+            <label class="text-sm text-slate-300">Slug (e.g., privacy)</label>
+            <input type="text" name="slug" id="slug" value="<%= policy ? policy.slug : '' %>" class="input-field mt-1" required>
+        </div>
+        <div>
+            <label class="text-sm text-slate-300">Content Type</label>
+            <select name="contentType" id="contentType" class="input-field mt-1">
+                <option value="text" <%= policy && policy.contentType === 'text' ? 'selected' : '' %>>Plain Text</option>
+                <option value="html" <%= policy && policy.contentType === 'html' ? 'selected' : '' %>>HTML</option>
+            </select>
+        </div>
+        <div>
+            <label class="text-sm text-slate-300">Content</label>
+            <textarea name="content" id="content" rows="12" class="input-field mt-1"><%= policy ? policy.content : '' %></textarea>
+        </div>
+        <button type="submit" class="btn-primary px-6 py-3">Save Policy</button>
+    </form>
+</div>
+
+<script>
+    const templates = {
+        privacy: {
+            title: 'Privacy Policy',
+            slug: 'privacy',
+            contentType: 'html',
+            content: `<h2>Privacy Policy</h2>
+<p>Your privacy is important to us. This policy explains how we collect, use, and protect your personal information.</p>
+<p><strong>Information Collection:</strong> We collect only the data necessary to provide our services, such as email address and Discord username.</p>
+<p><strong>Use of Information:</strong> Your data is used solely for order processing and license key delivery.</p>
+<p><strong>Data Protection:</strong> We implement robust security measures to safeguard your data. We do not sell or share your personal information with third parties.</p>
+<p>By using our service, you agree to this Privacy Policy.</p>`
+        },
+        terms: {
+            title: 'Terms of Service',
+            slug: 'terms',
+            contentType: 'html',
+            content: `<h2>Terms of Service</h2>
+<p>Welcome to Key Shop. By purchasing a license key, you agree to the following terms:</p>
+<ul>
+<li>Keys are for personal use only and must not be resold.</li>
+<li>We reserve the right to revoke a key if misuse is detected.</li>
+<li>Key validity begins from the date of purchase and cannot be extended without renewal payment.</li>
+<li>We are not responsible for unauthorized use after delivery.</li>
+<li>All payments are processed securely via Razorpay.</li>
+</ul>
+<p>We may update these terms at any time. Continued use constitutes acceptance.</p>`
+        },
+        refund: {
+            title: 'Refund Policy',
+            slug: 'refund',
+            contentType: 'html',
+            content: `<h2>Refund Policy</h2>
+<p>We strive for customer satisfaction. Our refund policy is as follows:</p>
+<ul>
+<li>If you experience any issue with your key, contact us within <strong>24 hours</strong> of purchase.</li>
+<li>We will verify the key status and, if defective, issue a replacement or refund.</li>
+<li>No refunds will be given after the key has been successfully used or its expiry period has begun.</li>
+<li>Refund requests are processed within 5-7 business days.</li>
+</ul>
+<p>To request a refund, reach out via our support channels.</p>`
+        }
+    };
+
+    function applyTemplate(templateKey) {
+        if (!templateKey) return;
+        const t = templates[templateKey];
+        if (!t) return;
+        document.getElementById('title').value = t.title;
+        document.getElementById('slug').value = t.slug;
+        document.getElementById('contentType').value = t.contentType;
+        document.getElementById('content').value = t.content;
+    }
+</script>
+
+<%- include('../partials/footer') %>

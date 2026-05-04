@@ -1,0 +1,56 @@
+<nav class="w-full max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center py-4 px-6 mb-8 glass-card gap-4 relative">
+    <div class="flex w-full md:w-auto justify-between items-center">
+        <a href="/" class="flex items-center gap-3">
+            <% if (typeof settings !== 'undefined' && settings.logoUrl) { %>
+                <img src="<%= settings.logoUrl %>" alt="Logo" class="h-10 w-auto object-contain rounded-lg">
+            <% } else { %>
+                <i class="fa-solid fa-key text-3xl text-primary"></i>
+            <% } %>
+            <span class="text-2xl font-bold text-white"><%= (typeof settings !== 'undefined' && settings.siteName) ? settings.siteName : 'Key Shop' %></span>
+        </a>
+        <button id="shopHamburgerBtn" class="md:hidden text-slate-300 hover:text-white focus:outline-none" onclick="toggleShopMenu()">
+            <i class="fa-solid fa-bars text-2xl"></i>
+        </button>
+    </div>
+    <div id="shopNavLinks" class="shop-mobile-menu hidden md:flex flex-col md:flex-row w-full md:w-auto gap-3 md:gap-6 items-center mt-4 md:mt-0">
+        <a href="/shop/purchase" class="text-sm md:text-base text-slate-300 hover:text-white transition"><i class="fa-solid fa-cart-shopping mr-1"></i> Buy Key</a>
+        <a href="/shop/orders" class="text-sm md:text-base text-slate-300 hover:text-white transition"><i class="fa-solid fa-clock-rotate-left mr-1"></i> My Orders</a>
+        <% if (typeof user !== 'undefined' && user) { %>
+            <a href="/auth/logout" class="text-sm md:text-base text-red-400 hover:text-red-300 transition"><i class="fa-solid fa-right-from-bracket mr-1"></i> Logout</a>
+        <% } else { %>
+            <a href="/auth/login" class="btn-primary text-sm px-5 py-2">Login</a>
+        <% } %>
+    </div>
+</nav>
+
+<style>
+    @media (max-width: 767px) {
+        .shop-mobile-menu {
+            display: none !important;
+            flex-direction: column;
+            width: 100%;
+        }
+        .shop-mobile-menu.show {
+            display: flex !important;
+        }
+    }
+    @media (min-width: 768px) {
+        .shop-mobile-menu {
+            display: flex !important;
+        }
+    }
+</style>
+
+<script>
+    function toggleShopMenu() {
+        const menu = document.getElementById('shopNavLinks');
+        menu.classList.toggle('show');
+    }
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('shopNavLinks');
+        const btn = document.getElementById('shopHamburgerBtn');
+        if (menu && btn && !menu.contains(event.target) && !btn.contains(event.target)) {
+            menu.classList.remove('show');
+        }
+    });
+</script>

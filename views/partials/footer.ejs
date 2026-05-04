@@ -1,0 +1,51 @@
+<footer class="w-full bg-slate-900/80 backdrop-blur-md border-t border-slate-800 mt-auto">
+    <div class="max-w-6xl mx-auto px-4 py-6 flex flex-col md:flex-row justify-between items-center gap-4 text-sm text-slate-400">
+        <!-- Left: Site info -->
+        <div class="text-center md:text-left">
+            <h3 class="text-white font-semibold text-base mb-1">
+                <%= (typeof settings !== 'undefined' && settings.siteName) ? settings.siteName : 'Key Shop' %>
+            </h3>
+            <p class="text-xs">Premium License Keys · Instant Delivery</p>
+        </div>
+
+        <!-- Optional Social Media Icons (uncomment and adjust) -->
+        <!-- <div class="flex gap-4 mt-2 md:mt-0">
+            <a href="#" class="hover:text-white"><i class="fa-brands fa-facebook"></i></a>
+            <a href="#" class="hover:text-white"><i class="fa-brands fa-twitter"></i></a>
+            <a href="#" class="hover:text-white"><i class="fa-brands fa-instagram"></i></a>
+            <a href="#" class="hover:text-white"><i class="fa-brands fa-linkedin"></i></a>
+        </div> -->
+
+        <!-- Right: Legal Links -->
+        <div class="flex gap-6 text-center md:text-right">
+            <a href="/policy/privacy" class="hover:text-white transition">Privacy Policy</a>
+            <a href="/policy/terms" class="hover:text-white transition">Terms of Service</a>
+            <a href="/policy/refund" class="hover:text-white transition">Refund Policy</a>
+        </div>
+    </div>
+
+    <!-- Copyright -->
+    <div class="text-center py-4 border-t border-slate-800 text-xs text-slate-500">
+        &copy; <%= new Date().getFullYear() %> 
+        <%= (typeof settings !== 'undefined' && settings.siteName) ? settings.siteName : 'Key Shop' %>. All rights reserved.
+    </div>
+
+    <!-- footer.ejs me sabse neeche -->
+
+<!--Start of Tawk.to Script-->
+<script type="text/javascript">
+var Tawk_API=Tawk_API||{}, Tawk_LoadStart=new Date();
+(function(){
+var s1=document.createElement("script"),s0=document.getElementsByTagName("script")[0];
+s1.async=true;
+s1.src='https://embed.tawk.to/69f8c6fa4126b11c39d607fa/1jnpsigso';
+s1.charset='UTF-8';
+s1.setAttribute('crossorigin','*');
+s0.parentNode.insertBefore(s1,s0);
+})();
+</script>
+<!--End of Tawk.to Script-->
+
+</body>   <!-- agar yahan </body> hai to theek, nahi to script bas footer.ejs ke ant mein daal do -->
+
+</footer>

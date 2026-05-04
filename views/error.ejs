@@ -1,0 +1,10 @@
+<%- include('partials/header') %>
+<div class="min-h-screen flex items-center justify-center bg-darkbase p-4">
+    <div class="glass-card p-8 text-center">
+        <i class="fa-solid fa-triangle-exclamation text-4xl text-primary mb-4"></i>
+        <h1 class="text-2xl font-bold text-white mb-2">Oops!</h1>
+        <p class="text-slate-400"><%= typeof message !== 'undefined' ? message : 'An unexpected error occurred.' %></p>
+        <a href="/" class="btn-primary mt-6 px-6 py-2">Go to Home</a>
+    </div>
+</div>
+<%- include('partials/footer') %>

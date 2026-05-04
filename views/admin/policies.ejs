@@ -1,0 +1,30 @@
+<%- include('../partials/header') %>
+
+<!-- 🔒 Favicon override -->
+<% if (typeof settings !== 'undefined' && settings.faviconUrl) { %>
+    <link rel="icon" href="<%= settings.faviconUrl %>" type="image/x-icon">
+<% } %>
+
+<%- include('../partials/admin-nav') %>
+
+<div class="w-full max-w-6xl mx-auto glass-card p-6">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-white">Policy Pages</h2>
+        <a href="/admin/policies/create" class="btn-primary px-4 py-2 text-sm"><i class="fa-solid fa-plus"></i> New Policy</a>
+    </div>
+    <div class="space-y-4">
+        <% policies.forEach(p => { %>
+            <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700 flex justify-between items-center">
+                <div>
+                    <span class="text-white font-medium"><%= p.title %></span>
+                    <span class="text-slate-400 text-xs ml-2">(<%= p.slug %>)</span>
+                </div>
+                <div class="flex gap-2">
+                    <a href="/admin/policies/edit/<%= p._id %>" class="text-slate-400 hover:text-primary"><i class="fa-solid fa-pen"></i></a>
+                    <a href="/admin/policies/delete/<%= p._id %>" class="text-slate-400 hover:text-red-400"><i class="fa-solid fa-trash"></i></a>
+                </div>
+            </div>
+        <% }) %>
+    </div>
+</div>
+<%- include('../partials/footer') %>

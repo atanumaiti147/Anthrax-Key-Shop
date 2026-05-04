@@ -1,0 +1,125 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+
+<div class="w-full max-w-4xl mx-auto glass-card p-8 space-y-10">
+    <div>
+        <h2 class="text-2xl font-bold text-white mb-1">Store Settings</h2>
+        <p class="text-slate-400 text-sm">Manage pricing, authentication, branding and maintenance.</p>
+    </div>
+
+    <form action="/admin/settings" method="POST" class="space-y-10">
+        <!-- Site Identity -->
+        <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-700/50">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-pen-to-square text-primary"></i> Site Identity
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Site Name</label>
+                    <input type="text" name="siteName" value="<%= settings.siteName || 'Key Shop' %>" class="input-field">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Favicon URL</label>
+                    <input type="url" name="faviconUrl" value="<%= settings.faviconUrl || '' %>" class="input-field" placeholder="https://...">
+                </div>
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Logo URL</label>
+                    <input type="url" name="logoUrl" value="<%= settings.logoUrl || '' %>" class="input-field" placeholder="https://...">
+                </div>
+            </div>
+        </div>
+
+        <!-- Pricing (UPDATED with step="0.01") -->
+        <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-700/50">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-tag text-primary"></i> Pricing
+            </h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Per‑Day Price (₹)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                        <input type="number" name="perDayPrice" value="<%= settings.perDayPrice %>" step="0.01" required class="input-field pl-8">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-300 mb-2">Extra Device Price (₹)</label>
+                    <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                        <input type="number" name="extraDevicePrice" value="<%= settings.extraDevicePrice || 0 %>" step="0.01" required class="input-field pl-8">
+                    </div>
+                    <p class="text-xs text-slate-500 mt-2">Charged for every device beyond the first one.</p>
+                </div>
+            </div>
+            <div class="mt-5">
+                <label class="block text-sm font-medium text-slate-300 mb-2">Platform Fee (₹)</label>
+                <div class="relative max-w-xs">
+                    <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 font-bold">₹</span>
+                    <input type="number" name="platformFee" value="<%= settings.platformFee || 0 %>" step="0.01" required class="input-field pl-8">
+                </div>
+                <p class="text-xs text-slate-500 mt-2">Flat fee added to every order.</p>
+            </div>
+        </div>
+
+        <!-- Authentication Toggles -->
+        <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-700/50">
+            <h3 class="text-lg font-semibold text-white mb-4 flex items-center gap-2">
+                <i class="fa-solid fa-users-gear text-primary"></i> Authentication
+            </h3>
+            <div class="space-y-4">
+                <!-- Discord Toggle -->
+                <label class="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-700 cursor-pointer hover:border-slate-600 transition">
+                    <div>
+                        <div class="text-white font-medium flex items-center gap-2">
+                            <i class="fa-brands fa-discord text-[#5865F2]"></i> Discord Login
+                        </div>
+                        <div class="text-xs text-slate-400 mt-1">Allow users to sign in with Discord</div>
+                    </div>
+                    <div class="relative">
+                        <input type="checkbox" name="enableDiscordLogin" class="sr-only peer" <%= settings.enableDiscordLogin ? 'checked' : '' %>>
+                        <div class="w-11 h-6 bg-slate-700 peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </div>
+                </label>
+
+                <!-- Google Toggle -->
+                <label class="flex items-center justify-between p-4 bg-slate-800/50 rounded-xl border border-slate-700 cursor-pointer hover:border-slate-600 transition">
+                    <div>
+                        <div class="text-white font-medium flex items-center gap-2">
+                            <i class="fa-brands fa-google text-red-400"></i> Google Login
+                        </div>
+                        <div class="text-xs text-slate-400 mt-1">Allow users to sign in with Google</div>
+                    </div>
+                    <div class="relative">
+                        <input type="checkbox" name="enableGoogleLogin" class="sr-only peer" <%= settings.enableGoogleLogin ? 'checked' : '' %>>
+                        <div class="w-11 h-6 bg-slate-700 peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                    </div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Maintenance Mode -->
+        <div class="bg-slate-900/40 p-6 rounded-2xl border border-slate-700/50">
+            <div class="flex items-center justify-between">
+                <div>
+                    <h3 class="text-lg font-semibold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-triangle-exclamation text-primary"></i> Maintenance Mode
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-1">When enabled, only administrators can access the site. Users will see a maintenance page.</p>
+                </div>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="maintenanceMode" class="sr-only peer" <%= settings.maintenanceMode ? 'checked' : '' %>>
+                    <div class="w-11 h-6 bg-slate-700 peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                </label>
+            </div>
+        </div>
+
+        <!-- Save Button -->
+        <div class="flex justify-end pt-4 border-t border-slate-700/50">
+            <button type="submit" class="btn-primary px-8 py-3">
+                <i class="fa-solid fa-save mr-2"></i> Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+
+<%- include('../partials/footer') %>

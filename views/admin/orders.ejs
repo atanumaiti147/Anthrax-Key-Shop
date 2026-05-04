@@ -1,0 +1,135 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+
+<div class="w-full max-w-6xl mx-auto glass-card p-6 overflow-hidden">
+    <div class="flex flex-col md:flex-row justify-between items-center mb-6 border-b border-slate-700/50 pb-4 gap-4">
+        <h2 class="text-xl font-bold text-white">Order Management</h2>
+        <div class="flex items-center gap-4">
+            <!-- Bulk delete button (hidden until selection) -->
+            <button id="bulkDeleteBtn" onclick="bulkDelete()" class="bg-red-500/20 hover:bg-red-500/30 text-red-300 px-4 py-2 rounded-lg text-sm hidden transition">
+                <i class="fa-solid fa-trash-can mr-1"></i> Delete Selected
+            </button>
+            <div class="relative">
+                <i class="fa-solid fa-search absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                <input type="text" placeholder="Search orders..." class="input-field !py-2 pl-9 text-sm !w-64">
+            </div>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-left text-sm whitespace-nowrap" id="ordersTable">
+            <thead class="text-xs text-slate-400 uppercase bg-slate-900/50 rounded-t-lg">
+                <tr>
+                    <th class="px-4 py-4 rounded-tl-lg">
+                        <input type="checkbox" id="selectAll" onclick="toggleAll(this)" class="w-4 h-4 text-primary bg-slate-700 border-slate-600 rounded">
+                    </th>
+                    <th class="px-6 py-4">Order ID</th>
+                    <th class="px-6 py-4">Customer</th>
+                    <th class="px-6 py-4">Expiry</th>
+                    <th class="px-6 py-4">Status</th>
+                    <th class="px-6 py-4">Amount</th>
+                    <th class="px-6 py-4">Key</th>
+                    <th class="px-6 py-4 rounded-tr-lg text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <% if (orders.length === 0) { %>
+                    <tr><td colspan="8" class="py-12 text-center text-slate-500">No orders yet.</td></tr>
+                <% } else { %>
+                    <% orders.forEach(order => { %>
+                        <tr class="border-b border-slate-800 hover:bg-slate-800/50 transition" data-order-id="<%= order._id %>">
+                            <td class="px-4 py-4">
+                                <input type="checkbox" class="order-checkbox w-4 h-4 text-primary bg-slate-700 border-slate-600 rounded" onchange="updateSelection()">
+                            </td>
+                            <td class="px-6 py-4 font-medium text-white"><%= order.razorpayOrderId %></td>
+                            <td class="px-6 py-4"><%= order.userId?.email || 'N/A' %></td>
+                            <td class="px-6 py-4"><%= new Date(order.keyDetails.expiryDate).toLocaleDateString() %></td>
+                            <td class="px-6 py-4">
+                                <span class="bg-<%= order.status === 'paid' ? 'emerald' : 'amber' %>-500/10 text-<%= order.status === 'paid' ? 'emerald' : 'amber' %>-500 text-xs font-medium px-2.5 py-1 rounded-full border border-<%= order.status === 'paid' ? 'emerald' : 'amber' %>-500/20"><%= order.status %></span>
+                            </td>
+                            <td class="px-6 py-4 font-medium">₹<%= order.amount %></td>
+                            <td class="px-6 py-4 text-emerald-400 font-mono text-xs"><%= order.generatedKey || 'N/A' %></td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <% if (order.generatedKey) { %>
+                                        <!-- 🆕 View Detail -->
+                                        <a href="/admin/order-detail/<%= order._id %>" class="text-slate-400 hover:text-primary" title="View Details">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </a>
+                                        <a href="#" onclick="editExpiry('<%= order._id %>', '<%= order.keyDetails.expiryDate.toISOString().split('T')[0] %>')" class="text-slate-400 hover:text-primary" title="Edit Expiry"><i class="fa-solid fa-pen"></i></a>
+                                        <a href="/admin/invoice/<%= order._id %>" class="text-slate-400 hover:text-primary" title="Download Invoice"><i class="fa-solid fa-file-pdf"></i></a>
+                                        <a href="/admin/delete-order/<%= order._id %>" class="text-slate-400 hover:text-red-400" onclick="return confirm('Delete this order?')" title="Delete"><i class="fa-solid fa-trash"></i></a>
+                                        <a href="/admin/revoke-key/<%= order._id %>" class="text-slate-400 hover:text-red-400" onclick="return confirm('Revoke key permanently?')" title="Revoke Key"><i class="fa-solid fa-ban"></i></a>
+                                    <% } else { %>
+                                        <span class="text-slate-500">—</span>
+                                    <% } %>
+                                </div>
+                            </td>
+                        </tr>
+                    <% }) %>
+                <% } %>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    // Single edit expiry function (unchanged)
+    function editExpiry(orderId, currentExpiry) {
+        const newExpiry = prompt("Enter new expiry date (YYYY-MM-DD):", currentExpiry);
+        if (newExpiry) {
+            fetch(`/admin/update-order-expiry/${orderId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ expiryDate: newExpiry })
+            }).then(res => {
+                if (res.ok) location.reload();
+                else alert('Failed to update');
+            });
+        }
+    }
+
+    // Bulk selection logic
+    const selectAll = document.getElementById('selectAll');
+    const checkboxes = document.querySelectorAll('.order-checkbox');
+    const bulkBtn = document.getElementById('bulkDeleteBtn');
+
+    function updateSelection() {
+        const anyChecked = document.querySelectorAll('.order-checkbox:checked').length > 0;
+        bulkBtn.classList.toggle('hidden', !anyChecked);
+        const allChecked = document.querySelectorAll('.order-checkbox:checked').length === checkboxes.length;
+        selectAll.checked = allChecked;
+    }
+
+    function toggleAll(source) {
+        checkboxes.forEach(cb => cb.checked = source.checked);
+        updateSelection();
+    }
+
+    async function bulkDelete() {
+        const checked = document.querySelectorAll('.order-checkbox:checked');
+        if (checked.length === 0) return;
+        if (!confirm(`Are you sure you want to delete ${checked.length} selected orders?`)) return;
+
+        const ids = Array.from(checked).map(cb => cb.closest('tr').dataset.orderId);
+        try {
+            const res = await fetch('/admin/bulk-delete-orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ orderIds: ids })
+            });
+            if (res.ok) {
+                location.reload();
+            } else {
+                alert('Failed to delete orders');
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error occurred');
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', updateSelection);
+</script>
+
+<%- include('../partials/footer') %>

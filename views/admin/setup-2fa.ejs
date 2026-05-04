@@ -1,0 +1,26 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+
+<div class="w-full max-w-2xl mx-auto glass-card p-8 text-center">
+    <h2 class="text-2xl font-bold text-white mb-2">Setup Two-Factor Authentication</h2>
+    <p class="text-slate-400 text-sm mb-6">Scan this QR code with your authenticator app (Google Authenticator, Authy, etc.)</p>
+
+    <img src="<%= qrCodeUrl %>" alt="QR Code" class="mx-auto mb-6 rounded-xl border border-slate-700" style="width:200px; height:200px;">
+
+    <p class="text-slate-300 text-sm mb-4">Or enter this secret manually:</p>
+    <code class="bg-slate-800 px-4 py-2 rounded-lg text-primary font-mono text-sm break-all"><%= secret %></code>
+
+    <% if (typeof error !== 'undefined' && error) { %>
+        <div class="mt-4 bg-red-500/10 border border-red-500/30 text-red-300 p-3 rounded-xl"><%= error %></div>
+    <% } %>
+
+    <form action="/admin/settings/2fa/verify" method="POST" class="mt-8 space-y-4">
+        <div>
+            <label class="block text-sm text-slate-300 mb-2">Enter OTP from app</label>
+            <input type="text" name="token" placeholder="123456" required class="input-field text-center" maxlength="6">
+        </div>
+        <button type="submit" class="btn-primary w-full py-3">Verify & Enable 2FA</button>
+    </form>
+</div>
+
+<%- include('../partials/footer') %>

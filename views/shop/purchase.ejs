@@ -1,0 +1,306 @@
+<%- include('../partials/header') %>
+<%- include('../partials/shop-nav') %>
+
+<div class="glass-card w-full max-w-4xl mx-auto p-6 md:p-10 flex-grow">
+    <a href="/" class="inline-flex items-center text-slate-400 hover:text-white mb-4 text-sm">
+        <i class="fa-solid fa-arrow-left mr-2"></i> Back to Home
+    </a>
+
+    <h2 class="text-3xl md:text-4xl font-bold text-white mb-2">
+        <i class="fa-solid fa-key text-primary mr-3"></i> Configure License
+    </h2>
+    <p class="text-slate-400 mb-6">
+        Set duration, devices, note & Discord.
+        <span class="text-primary font-medium">
+            Per day: ₹<%= perDayPrice %> | Extra device: ₹<%= extraDevicePrice %> | Platform fee: ₹<%= platformFee %>
+        </span>
+    </p>
+
+    <!-- 🆕 Duration Selector: Number + Unit -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+        <div>
+            <label class="block text-sm text-slate-300 mb-2"><i class="fa-regular fa-clock text-primary mr-2"></i> License Duration</label>
+            <div class="flex gap-2">
+                <input type="number" id="durationNumber" value="1" min="1" class="input-field w-24" onchange="updatePrice()" oninput="updatePrice()">
+                <select id="durationUnit" class="input-field flex-1" onchange="updatePrice()">
+                    <option value="1">Day(s)</option>
+                    <option value="7">Week(s)</option>
+                    <option value="30">Month(s)</option>
+                    <option value="365">Year(s)</option>
+                </select>
+            </div>
+            <p class="text-xs text-slate-400 mt-2" id="expiryPreview">Expires on: —</p>
+        </div>
+
+        <!-- Max Devices -->
+        <div>
+            <label class="block text-sm text-slate-300 mb-2"><i class="fa-solid fa-laptop text-primary mr-2"></i> Max Devices</label>
+            <input type="number" id="maxDevices" value="1" min="1" max="10" class="input-field" required onchange="updatePrice()">
+        </div>
+    </div>
+
+    <div class="mb-6">
+        <label class="block text-sm text-slate-300 mb-2"><i class="fa-solid fa-pen text-primary mr-2"></i> Enter your Name</label>
+        <textarea id="note" rows="3" placeholder="e.g., spidy09, raj, etc..." class="input-field resize-none"></textarea>
+    </div>
+
+    <!-- 🎁 Gift Option -->
+    <div class="mb-6 bg-slate-900/40 p-4 rounded-2xl border border-slate-700/50">
+        <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="isGift" onchange="toggleGiftFields()" class="w-4 h-4 text-primary bg-slate-700 rounded">
+            <span class="text-sm text-slate-300"><i class="fa-solid fa-gift text-primary mr-1"></i> Buy as a Gift</span>
+        </label>
+        <div id="giftFields" class="hidden mt-4 space-y-3">
+            <div>
+                <label class="text-xs text-slate-400 block mb-1">Recipient Email (optional)</label>
+                <input type="email" id="giftEmail" placeholder="friend@example.com" class="input-field">
+            </div>
+            <div>
+                <label class="text-xs text-slate-400 block mb-1">Recipient Discord Username (optional)</label>
+                <input type="text" id="giftDiscordUsername" placeholder="friend#1234" class="input-field">
+            </div>
+        </div>
+    </div>
+
+    <!-- Coupon Code Section -->
+    <div class="mb-6 bg-slate-900/40 p-4 rounded-2xl border border-slate-700/50">
+        <label class="text-sm text-slate-300 block mb-2"><i class="fa-solid fa-ticket text-primary mr-2"></i>Have a coupon?</label>
+        <div class="flex gap-2">
+            <input type="text" id="couponCode" placeholder="Enter code" class="input-field flex-1">
+            <button type="button" onclick="applyCoupon()" class="btn-primary !w-auto px-6 py-2 text-sm">Apply</button>
+        </div>
+        <p id="couponMessage" class="text-xs mt-2"></p>
+    </div>
+
+    <!-- Price & Pay -->
+    <div class="bg-slate-900/60 rounded-2xl p-6 border border-primary/20 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+            <p class="text-slate-400 text-sm">Total Amount</p>
+            <div class="flex items-baseline gap-2">
+                <span class="text-3xl font-bold text-white" id="totalPrice">₹0</span>
+                <span class="text-sm text-slate-500" id="calcDetails">—</span>
+            </div>
+        </div>
+        <button type="button" id="payButton" onclick="initiatePayment()" class="btn-primary !w-auto px-10 py-3 text-lg">
+            <i class="fa-solid fa-credit-card mr-2"></i> Pay Now
+        </button>
+    </div>
+
+    <div id="paymentMessage" class="hidden mt-4 p-4 rounded-xl"></div>
+</div>
+
+<!-- Success Modal (unchanged) -->
+<div id="successModal" class="fixed inset-0 z-50 hidden items-center justify-center p-4" style="background: rgba(0,0,0,0.7); backdrop-filter: blur(8px);">
+    <div class="glass-card w-full max-w-md mx-auto p-6 md:p-8 text-center relative">
+        <button onclick="closeModal()" class="absolute top-3 right-3 text-slate-400 hover:text-white">
+            <i class="fa-solid fa-times text-xl"></i>
+        </button>
+        <div class="w-20 h-20 mx-auto rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center mb-4">
+            <i class="fa-solid fa-check-circle text-5xl text-green-400"></i>
+        </div>
+        <h2 class="text-2xl md:text-3xl font-bold text-white mb-2">Payment Successful!</h2>
+        <p class="text-slate-400 text-sm mb-4">Your license key has been generated</p>
+        <div class="bg-slate-900/50 rounded-xl p-4 mb-6">
+            <p class="text-xs text-slate-400 mb-1">License Key</p>
+            <div class="flex items-center justify-center gap-2 mb-2">
+                <code id="generatedKeyDisplay" class="text-green-300 font-mono text-lg select-all break-all"></code>
+                <button onclick="copyKey()" class="text-slate-400 hover:text-white flex-shrink-0"><i class="fa-solid fa-copy"></i></button>
+            </div>
+            <p class="text-xs text-slate-500">Expires: <span id="keyExpiryDisplay"></span></p>
+        </div>
+        <div class="flex flex-col sm:flex-row gap-3">
+            <a href="/shop/orders" class="btn-primary flex-1 py-2.5 text-sm"><i class="fa-solid fa-list"></i> View Orders</a>
+            <button onclick="closeModal()" class="btn-primary !bg-slate-700 hover:!bg-slate-600 flex-1 py-2.5 text-sm">Close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pricing values from server
+    const perDayPrice = <%= typeof perDayPrice !== 'undefined' ? perDayPrice : 50 %>;
+    const extraDevicePrice = <%= typeof extraDevicePrice !== 'undefined' ? extraDevicePrice : 0 %>;
+    const platformFee = <%= typeof platformFee !== 'undefined' ? platformFee : 0 %>;
+
+    const durationNumber = document.getElementById('durationNumber');
+    const durationUnit = document.getElementById('durationUnit');
+    const deviceEl = document.getElementById('maxDevices');
+    const priceEl = document.getElementById('totalPrice');
+    const calcEl = document.getElementById('calcDetails');
+    const expiryPreview = document.getElementById('expiryPreview');
+    const payBtn = document.getElementById('payButton');
+
+    let currentDiscount = 0;
+    let appliedCouponCode = null;
+
+    function toggleGiftFields() {
+        const checked = document.getElementById('isGift').checked;
+        document.getElementById('giftFields').classList.toggle('hidden', !checked);
+    }
+
+    // Compute total days: number * unit (unit value is day multiplier)
+    function getDurationDays() {
+        const num = parseInt(durationNumber.value) || 1;
+        const unitMultiplier = parseInt(durationUnit.value) || 1;
+        return num * unitMultiplier;
+    }
+
+    function getExpiryDate(days) {
+        const d = new Date();
+        d.setDate(d.getDate() + days);
+        return d;
+    }
+
+    function calculateSubtotal() {
+        const days = getDurationDays();
+        const devices = parseInt(deviceEl.value) || 1;
+        const base = days * perDayPrice;
+        const extra = Math.max(0, devices - 1) * extraDevicePrice;
+        return base + extra;
+    }
+
+    function updatePrice() {
+        const sub = calculateSubtotal();
+        const total = sub + platformFee - currentDiscount;
+        priceEl.textContent = '₹' + total.toLocaleString('en-IN');
+        calcEl.textContent = `Subtotal: ₹${sub} + Platform: ₹${platformFee} - Discount: ₹${currentDiscount}`;
+
+        const expiry = getExpiryDate(getDurationDays());
+        expiryPreview.textContent = 'Expires on: ' + expiry.toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+    }
+
+    async function applyCoupon() {
+        const code = document.getElementById('couponCode').value.trim();
+        if (!code) return;
+        const subtotal = calculateSubtotal();
+        if (subtotal <= 0) {
+            document.getElementById('couponMessage').innerHTML = '<span class="text-red-400">Please select a duration first.</span>';
+            return;
+        }
+        try {
+            const res = await fetch('/shop/validate-coupon', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code, subtotal, maxDevices: deviceEl.value })
+            });
+            const data = await res.json();
+            const msgEl = document.getElementById('couponMessage');
+            if (data.valid) {
+                currentDiscount = data.discount;
+                appliedCouponCode = data.code;
+                msgEl.innerHTML = `<span class="text-green-400">Coupon applied! Discount: ₹${data.discount} off</span>`;
+            } else {
+                currentDiscount = 0;
+                appliedCouponCode = null;
+                msgEl.innerHTML = `<span class="text-red-400">${data.message}</span>`;
+            }
+            updatePrice();
+        } catch (err) {
+            console.error(err);
+            document.getElementById('couponMessage').innerHTML = '<span class="text-red-400">Network error. Please try again.</span>';
+        }
+    }
+
+    durationNumber.addEventListener('change', updatePrice);
+    durationNumber.addEventListener('input', updatePrice);
+    durationUnit.addEventListener('change', updatePrice);
+    deviceEl.addEventListener('input', updatePrice);
+
+    updatePrice();
+
+    function showModal(key, expiry) {
+        document.getElementById('generatedKeyDisplay').textContent = key;
+        document.getElementById('keyExpiryDisplay').textContent = new Date(expiry).toLocaleDateString();
+        document.getElementById('successModal').classList.add('flex');
+        document.getElementById('successModal').classList.remove('hidden');
+    }
+    function closeModal() {
+        document.getElementById('successModal').classList.add('hidden');
+        document.getElementById('successModal').classList.remove('flex');
+    }
+    async function copyKey() {
+        const key = document.getElementById('generatedKeyDisplay').textContent;
+        await navigator.clipboard.writeText(key);
+        alert('Key copied!');
+    }
+
+    function setPayButton(disabled, html) {
+        payBtn.disabled = disabled;
+        if (html) payBtn.innerHTML = html;
+    }
+
+    async function initiatePayment() {
+        const durationDays = getDurationDays();
+        const maxDev = deviceEl.value;
+        const note = document.getElementById('note').value;
+        const discordUsername = document.getElementById('discordUsername')?.value?.trim();
+        const isGift = document.getElementById('isGift').checked;
+        const giftEmail = document.getElementById('giftEmail').value.trim();
+        const giftDiscordUsername = document.getElementById('giftDiscordUsername').value.trim();
+
+        if (durationDays <= 0) return alert('Select a valid duration');
+
+        setPayButton(true, '<i class="fa-solid fa-spinner fa-spin mr-2"></i> Processing...');
+
+        try {
+            const res = await fetch('/shop/create-order', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    durationDays,
+                    maxDevices: maxDev,
+                    note,
+                    discordUsername,
+                    couponCode: appliedCouponCode,
+                    isGift,
+                    giftEmail,
+                    giftDiscordUsername
+                })
+            });
+            const data = await res.json();
+            if (data.error) throw new Error(data.error);
+
+            const options = {
+                key: data.key,
+                amount: data.amount,
+                currency: 'INR',
+                name: '<%= (typeof settings !== "undefined" && settings.siteName) ? settings.siteName : "Key Shop" %>',
+                order_id: data.orderId,
+                handler: async function (response) {
+                    try {
+                        const vRes = await fetch('/shop/verify-payment', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(response)
+                        });
+                        const vData = await vRes.json();
+                        if (vData.success) {
+                            showModal(vData.key, vData.expiresAt || getExpiryDate(durationDays).toISOString());
+                        } else {
+                            alert('Verification failed: ' + (vData.error || ''));
+                        }
+                    } catch (e) {
+                        alert('Network error during verification.');
+                    }
+                    setPayButton(false, '<i class="fa-solid fa-credit-card mr-2"></i> Pay Now');
+                },
+                modal: {
+                    ondismiss: function () {
+                        setPayButton(false, '<i class="fa-solid fa-credit-card mr-2"></i> Pay Now');
+                    }
+                }
+            };
+
+            if (typeof Razorpay !== 'undefined') {
+                new Razorpay(options).open();
+            } else {
+                throw new Error('Razorpay script not loaded. Please refresh page.');
+            }
+        } catch (err) {
+            alert(err.message);
+            setPayButton(false, '<i class="fa-solid fa-credit-card mr-2"></i> Pay Now');
+        }
+    }
+</script>
+
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<%- include('../partials/footer') %>

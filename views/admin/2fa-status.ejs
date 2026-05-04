@@ -1,0 +1,17 @@
+<%- include('../partials/header') %>
+<%- include('../partials/admin-nav') %>
+
+<div class="w-full max-w-md mx-auto glass-card p-8 text-center">
+    <div class="w-16 h-16 mx-auto rounded-full bg-green-500/10 border border-green-500/30 flex items-center justify-center mb-4">
+        <i class="fa-solid fa-shield-halved text-3xl text-green-400"></i>
+    </div>
+    <h2 class="text-2xl font-bold text-white mb-2">2FA is Enabled</h2>
+    <p class="text-slate-400 text-sm mb-6">Your account is protected with two-factor authentication.</p>
+    <form action="/admin/settings/2fa/disable" method="POST" onsubmit="return confirm('Disable 2FA? Your account will be less secure.')">
+        <button type="submit" class="btn-primary !bg-red-600 hover:!bg-red-700 w-full py-3">
+            <i class="fa-solid fa-unlock mr-2"></i> Disable 2FA
+        </button>
+    </form>
+</div>
+
+<%- include('../partials/footer') %>
