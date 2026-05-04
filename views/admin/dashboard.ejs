@@ -8,12 +8,14 @@
 <%- include('../partials/admin-nav') %>
 
 <div class="w-full max-w-6xl mx-auto space-y-6">
-    <!-- Stats Cards (First row: 4 cards) -->
+    <!-- Stats Cards -->
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <div class="glass-card p-6 flex items-center justify-between group hover:border-primary/50 transition">
             <div>
                 <p class="text-slate-400 text-sm font-medium mb-1">Today's Revenue</p>
-                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition">₹<%= todayRevenue %></h3>
+                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition">
+                    ₹<%= Number(todayRevenue || 0).toFixed(2) %>
+                </h3>
                 <p class="text-xs text-slate-500 mt-1"><%= todayOrders %> order(s)</p>
             </div>
             <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-emerald-500">
@@ -23,7 +25,9 @@
         <div class="glass-card p-6 flex items-center justify-between group hover:border-primary/50 transition">
             <div>
                 <p class="text-slate-400 text-sm font-medium mb-1">This Month</p>
-                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition">₹<%= monthRevenue %></h3>
+                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition">
+                    ₹<%= Number(monthRevenue || 0).toFixed(2) %>
+                </h3>
                 <p class="text-xs text-slate-500 mt-1">Revenue</p>
             </div>
             <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-blue-500">
@@ -33,7 +37,9 @@
         <div class="glass-card p-6 flex items-center justify-between group hover:border-primary/50 transition">
             <div>
                 <p class="text-slate-400 text-sm font-medium mb-1">New Users</p>
-                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition"><%= newUsers %></h3>
+                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition">
+                    <%= newUsers %>
+                </h3>
                 <p class="text-xs text-slate-500 mt-1">This month</p>
             </div>
             <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-purple-500">
@@ -43,7 +49,9 @@
         <div class="glass-card p-6 flex items-center justify-between group hover:border-primary/50 transition">
             <div>
                 <p class="text-slate-400 text-sm font-medium mb-1">Total Revenue</p>
-                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition">₹<%= totalRevenue %></h3>
+                <h3 class="text-3xl font-bold text-white group-hover:text-primary transition">
+                    ₹<%= Number(totalRevenue || 0).toFixed(2) %>
+                </h3>
                 <p class="text-xs text-slate-500 mt-1"><%= totalOrders %> orders</p>
             </div>
             <div class="w-12 h-12 rounded-full bg-slate-900 border border-slate-700 flex items-center justify-center text-amber-500">
@@ -54,14 +62,12 @@
 
     <!-- Chart + Recent Orders -->
     <div class="flex flex-col lg:flex-row gap-6">
-        <!-- Revenue Chart -->
         <div class="flex-1 glass-card p-6">
             <h3 class="text-lg font-bold text-white mb-4">Revenue (Last 30 Days)</h3>
             <div class="relative w-full h-64 md:h-80">
                 <canvas id="revenueChart"></canvas>
             </div>
         </div>
-        <!-- Recent Orders + Export -->
         <div class="w-full lg:w-64 glass-card p-6 space-y-4">
             <h3 class="text-lg font-bold text-white">Recent Orders</h3>
             <% if (typeof recentOrders !== 'undefined' && recentOrders.length > 0) { %>
@@ -69,7 +75,7 @@
                     <% recentOrders.forEach(o => { %>
                         <li class="flex justify-between border-b border-slate-800 pb-1">
                             <span class="truncate mr-2"><%= o.userId?.email || 'N/A' %></span>
-                            <span class="text-emerald-400">₹<%= o.amount %></span>
+                            <span class="text-emerald-400">₹<%= Number(o.amount || 0).toFixed(2) %></span>
                         </li>
                     <% }) %>
                 </ul>
@@ -87,7 +93,7 @@
 <!-- Chart.js CDN -->
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
-    // Dummy data – replace with real data from server if available
+    // Dummy data (replace with real data if needed)
     const labels = [];
     const revenueData = [];
     for (let i = 29; i >= 0; i--) {
