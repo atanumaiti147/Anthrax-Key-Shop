@@ -231,7 +231,7 @@ router.post('/verify-payment', ensureAuth, async (req, res) => {
           amount: order.amount,
           couponCode: order.couponCode,
           discountAmount: order.discountAmount,
-          shopUrl: process.env.SHOP_URL || 'http://localhost:5000',
+          shopUrl: process.env.SHOP_URL || 'https://shop.anthrax.qzz.io',
           orderId: order._id.toString(),
           isGift: true,
           from: buyerName
@@ -255,7 +255,7 @@ router.post('/verify-payment', ensureAuth, async (req, res) => {
           amount: order.amount,
           couponCode: order.couponCode,
           discountAmount: order.discountAmount,
-          shopUrl: process.env.SHOP_URL || 'http://localhost:5000',
+          shopUrl: process.env.SHOP_URL || 'https://shop.anthrax.qzz.io',
           orderId: order._id.toString(),
           isGift: true,
           buyerReceipt: true
@@ -275,7 +275,7 @@ router.post('/verify-payment', ensureAuth, async (req, res) => {
           amount: order.amount,
           couponCode: order.couponCode,
           discountAmount: order.discountAmount,
-          shopUrl: process.env.SHOP_URL || 'http://localhost:5000',
+          shopUrl: process.env.SHOP_URL || 'https://shop.anthrax.qzz.io',
           orderId: order._id.toString()
         };
         await sendEmail(order.email, '🎉 Your License Key', emailData)
@@ -458,7 +458,7 @@ router.post('/transfer/:orderId', ensureAuth, async (req, res) => {
         amount: order.amount,
         couponCode: order.couponCode,
         discountAmount: order.discountAmount,
-        shopUrl: process.env.SHOP_URL || 'http://localhost:5000',
+        shopUrl: process.env.SHOP_URL || 'https://shop.anthrax.qzz.io',
         orderId: order._id.toString(),
         isGift: true
       }).catch(err => console.error('Transfer email failed:', err));
